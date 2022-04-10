@@ -1,0 +1,54 @@
+2.4.1 Random Prediction
+A very simple model is just randomly predict the rating using the probability distribution observed during the data exploration. For example, if we know the probability of all users giving a movie a rating of 3 is 10%, then we may guess that 10% of the ratings will have a rating of 3.
+
+Such prediction sets the worst error we may get, so any other model should provide better result.
+
+2.4.2 Linear Model
+The simplest model predicts all users will give the same rating to all movies and assumes the movie to movie variation is the randomly distributed error. Although the predicted rating can be any value, statistics theory says that the average minimizes the RMSE, so the initial prediction is just the average of all observed ratings, as described in this formula:
+
+Y^u,i=μ+ϵi,u
+
+Where Y^ is the predicted rating, μ is the mean of observed data and ϵi,u is the error distribution. Any value other than the mean increases the RMSE, so this is a good initial estimation.
+
+Part of the movie to movie variability can be explained by the fact that different movies have different rating distribution. This is easy to understand, since some movies are more popular than others and the public preference varies. This is called movie effect or movie bias, and is expressed as bi in this formula:
+
+Y^u,i=μ+bi+ϵi,u
+The movie effect can be calculated as the mean of the difference between the observed rating y and the mean μ.
+
+b^i=1N∑i=1N(yi−μ^)
+Similar to the movie effect, different users have different rating pattern or distribution. For example, some users like most movies and consistently rate 4 or 5, while other users dislike most movies rating 1 or 2. This is called user effect or user bias and is expressed in this formula:
+
+b^u=1N∑i=1N(yu,i−b^i−μ^)
+The prediction model that includes the user effect becomes:
+
+Y^u,i=μ+bi+bu+ϵu,i
+Movies can be grouped into categories or genres, with different distributions. In general, movies in the same genre get similar ratings. In this project we won’t evaluate the genre effect.
+
+2.4.3 Regularization
+The linear model provides a good estimation for the ratings, but doesn’t consider that many movies have very few number of ratings, and some users rate very few movies. This means that the sample size is very small for these movies and these users. Statistically, this leads to large estimated error.
+
+The estimated value can be improved adding a factor that penalizes small sample sizes and have have little or no impact otherwise. Thus, estimated movie and user effects can be calculated with these formulas:
+
+b^i=1ni+λ∑u=1ni(yu,i−μ^)
+
+b^u=1nu+λ∑i=1nu(yu,i−b^i−μ^)
+
+For values of N smaller than or similar to λ, b^i and b^u is smaller than the original values, whereas for values of N much larger than λ, b^i and b^u change very little.
+
+An effective method to choose λ that minimizes the RMSE is running simulations with several values of λ.
+
+2.4.4 Matrix Factorization
+Matrix factorization is widely used machine learning tool for predicting ratings in recommendation systems. This method became widely known during the Netflix Prize challenge10.
+
+The data can be converted into a matrix such that each user is in a row, each movie is in a column and the rating is in the cell, then the algorithm attempts to fill in the missing values. The table below provides a simple example of a 4×5 matrix.
+
+movie 1	movie 2	movie 3	movie 4	movie 5
+user 1	?	?	4	?	3
+user 2	2	?	?	4	?
+user 3	?	3	?	?	5
+user 4	3	?	2	?	?
+The concept is to approximate a large rating matrix Rm×n into the product of two lower dimension matrices Pk×m and Qk×n, such that
+
+R≈P′Q
+
+The R recosystem11 package provides methods to decompose the rating matrix and estimate the user rating, using parallel matrix factorization.
